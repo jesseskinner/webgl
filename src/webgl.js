@@ -1,21 +1,42 @@
+const canvas = document.querySelector('canvas');
+
+let gl;
+let program;
+
 const img = new Image();
 img.src = './src/backyard.jpg';
 img.onload = () => {
-	const canvas = document.querySelector('canvas');
 	canvas.width = img.width;
 	canvas.height = img.height;
 
+    gl = canvas.getContext('webgl');
+
 	// if (Math.random() < 0.5) {
-	renderImageToCanvas(canvas, img);
+	renderImageToCanvas(gl, img);
 	// } else {
 	// canvas.getContext('2d').drawImage(img, 0, 0);
 	// }
 };
 
-function renderImageToCanvas(canvas, img) {
-	const gl = canvas.getContext('webgl');
+let red = 255;
+let green = 255;
+let blue = 255;
 
-	const program = addProgram(gl);
+document.querySelector('#red').oninput = (e) => {
+    red = e.target.value;
+    render(gl, program, red, green, blue)
+};
+document.querySelector('#green').oninput = (e) => {
+    green = e.target.value;
+    render(gl, program, red, green, blue)
+};
+document.querySelector('#blue').oninput = (e) => {
+    blue = e.target.value;
+    render(gl, program, red, green, blue)
+};
+
+function renderImageToCanvas(gl, img) {
+	program = addProgram(gl);
 
 	setAttribute(
 		gl,
@@ -73,7 +94,7 @@ function renderImageToCanvas(canvas, img) {
 
 	addImageTexture(gl, img, program);
 
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	render(gl, program, red, green, blue);
 }
 
 function addProgram(gl) {
@@ -98,11 +119,18 @@ function addProgram(gl) {
 	gl.shaderSource(
 		fragmentShader,
 		`
+            precision highp float;
             varying highp vec2 v_texture_coordinate;
             uniform sampler2D sampler;
 
+            uniform float red;
+            uniform float green;
+            uniform float blue;
+
             void main() {
-                gl_FragColor = texture2D(sampler, v_texture_coordinate);
+                vec4 color = texture2D(sampler, v_texture_coordinate);
+
+                gl_FragColor = vec4(red, green, blue, 1.0) * color;
             }
         `
 	);
@@ -145,4 +173,12 @@ function setAttribute(gl, program, attribute, data) {
 	const location = gl.getAttribLocation(program, attribute);
 	gl.vertexAttribPointer(location, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(location);
+}
+
+function render(gl, program, red, green, blue) {
+	gl.uniform1f(gl.getUniformLocation(program, 'red'), red / 255);
+	gl.uniform1f(gl.getUniformLocation(program, 'green'), green / 255);
+	gl.uniform1f(gl.getUniformLocation(program, 'blue'), blue / 255);
+
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
 }

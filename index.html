@@ -14,10 +14,20 @@
             margin: 0;
             position: absolute;
         }
+        form {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
     </style>
 </head>
 <body>
     <canvas></canvas>
+    <form>
+        <input type="range" id="red" value="255" min="0" max="255">
+        <input type="range" id="green" value="255" min="0" max="255">
+        <input type="range" id="blue" value="255" min="0" max="255">
+    </form>
     <script type="module" src="./src/webgl.js"></script>
 </body>
 </html>
